@@ -10,25 +10,25 @@ function App() {
   const colors = [["mediumseagreen","purple"],["palevioletred","darkcyan"],["darkgoldenrod","indigo"],["darkkhaki","darkolivegreen"],["slategray","darkslategray"],["crimson","black"]]
   const [currentColor, setCurrentColor] = useState(0)
   const [data, setData] = useState({})
+  const [duplicate, setDuplicate] = useState({})
   const [columns, setColumns] = useState({})
-  const [curves, setCurves] = useState([])
   const [selected, setSelected] = useState(null)
   const [image, setImage] = useState(null)
   
   const [zoom, setZoom] = useState(100)
   const [trigger, setTrigger] = useState(0)
 
+  const triggerRerender = () => {
+    let zoom = (( window.outerWidth - 10 ) / window.innerWidth) * 100
+    setZoom(zoom)
+    const rand = Math.random() * Date.now()
+    setTrigger(rand)
+  }
+
   useEffect(() => {
-    const triggerRerender = () => {
-      let zoom = (( window.outerWidth - 10 ) / window.innerWidth) * 100
-      setZoom(zoom)
-      setTrigger(trigger + 1)
-    }
     window.addEventListener('resize', triggerRerender)
-    window.addEventListener('scroll', triggerRerender)
     return () => {
       window.removeEventListener('resize', triggerRerender)
-      window.removeEventListener('scroll', triggerRerender)
     }
   }, [])
 
@@ -36,9 +36,8 @@ function App() {
     if (!url) {
       return "unknown"
     }
-    let valid
     try {
-      valid = new URL(url)
+      const valid = new URL(url)
     } catch (error) {
       if (url.match(/iframe/) !== null) {
         const partsOne = url.split('src="')
@@ -199,22 +198,17 @@ function App() {
     setTimeout(() => {refs.current[uid].focus()}, 1)
   }
 
-  const removeNode = (key, data) => {
+  const removeNode = (key) => {
     Object.keys(data).forEach(other => {
       if (other in data) {
-        const index = data[other].links.findIndex((value) => {return value === key})
-        if (index !== -1) {
-          if (data[other].links.length > 1) {
-            data[other].links.splice(index, 1)
-          } else {
-            delete data[other]
-            removeNode(other, data)
-          }
+        const parent = other.substring(0, other.length - 1)
+        if (parent === key) {
+          removeNode(other)
         }
       }
     })
     delete data[key]
-    setData({...data})
+    //setData({...data})
     if (key === selected) {
       setSelected(0)
     }
@@ -395,10 +389,10 @@ function App() {
     }
     const fromRectangle = fromElement.getBoundingClientRect()
     const toRectangle = toElement.getBoundingClientRect()
-    const fromX = fromRectangle.right - refs.current["screen"].getBoundingClientRect().left - window.scrollX
-    const fromY = fromRectangle.y + fromRectangle.height * 0.5 - refs.current["screen"].getBoundingClientRect().top - window.scrollY
-    const toX = toRectangle.left - refs.current["screen"].getBoundingClientRect().left - window.scrollX
-    const toY = toRectangle.y + toRectangle.height * 0.5 - refs.current["screen"].getBoundingClientRect().top - window.scrollY
+    const fromX = fromRectangle.right - refs.current["screen"].getBoundingClientRect().left - window.scrollX - document.body.getBoundingClientRect().left
+    const fromY = fromRectangle.y + fromRectangle.height * 0.5 - refs.current["screen"].getBoundingClientRect().top - window.scrollY - document.body.getBoundingClientRect().top
+    const toX = toRectangle.left - refs.current["screen"].getBoundingClientRect().left - window.scrollX - document.body.getBoundingClientRect().left
+    const toY = toRectangle.y + toRectangle.height * 0.5 - refs.current["screen"].getBoundingClientRect().top - window.scrollY - document.body.getBoundingClientRect().top
     const middleX = (fromX + toX) * 0.5
     const middleY = (fromY + toY) * 0.5
     const curve = "M " + fromX + " " + fromY + " Q " + ((fromX + middleX) * 0.5) + " " + fromY + " " + middleX + " " + middleY + " T " + toX + " " + toY
@@ -409,7 +403,7 @@ function App() {
     if (Object.keys(data).length === 0) {
       const data = {}
       data[1] = {links:[], enabled:true, content:"a fresh start"}
-      setData(data)
+      setData({...data})
       setSelected(0)
     }
   }, [])
@@ -417,66 +411,33 @@ function App() {
   useEffect(() => {
     if (Object.keys(data).length === 0) {
       setColumns({})
-      setCurves([])
+      setDuplicate({})
     } else {
-      const dataToo = {...data}
-      const columns = {}
-      const curves = []
-      let current = -1
-      while (true) {
-        let altered = false
-        current += 1
-        columns[current] = []
-        if (current === 0) {
-          Object.keys(dataToo).forEach(key => {
-            const node = dataToo[key]
-            if (node.links.length === 0) {
-              columns[current].push(key)
-              delete dataToo[key]
-              altered = true
-            }
-          })
-        } else {
-          Object.keys(dataToo).forEach(key => {
-            const node = dataToo[key]
-            const links = [...node.links]
-            for (let index = links.length - 1; index >= 0; index--) {
-              const link = links[index]
-              for (let indexTwo = current - 1; indexTwo >= 0; indexTwo--) {
-                if (columns[indexTwo].findIndex((value) => {return value === link.toString()}) !== -1) {
-                  curves.push(link + "_" + key)
-                  links.splice(index, 1)
-                  break
-                }
-              }
-            }
-            if (links.length === 0) {
-              columns[current].push(key)
-              delete dataToo[key]
-              altered = true
-            }
-          })
+      const newColumns = {}
+      Object.keys(data).forEach(key => {
+        if (!(key.length in newColumns)) {
+          newColumns[key.length] = []
         }
-        if (!altered) {
-          break
-        }
+        newColumns[key.length].push(key)
+      })
+      if (JSON.stringify(newColumns) !== JSON.stringify(columns)) {
+        setColumns(newColumns)
       }
-      setColumns(columns)
-      setCurves([])
       setTimeout(() => {setHeights()}, 1)
-      setTimeout(() => {setCurves(curves)}, 2)
+      if (JSON.stringify(duplicate) !== JSON.stringify(data)) {
+        setTimeout(() => {setDuplicate({...data})}, 2)
+      }
     }
+    //console.log("data:", data)
   }, [data, trigger])
 
   return (
     <div style={{minWidth:"100vw", maxWidth:"100vw", maxHeight:"100vh", minHeight:"100vh", margin:"0", padding:"0", color:"white", fontWeight:"bold"}}>
       <input ref={(element) => {refs.current["input"] = element}} type="file" name="choose tree of mind to open" accept=".treemind" style={{display:"none"}} onChange={(e) => {read(e)}} />
       <div style={{backgroundColor:"rgb(30,30,30)", minHeight:"100vh", minWidth:"100vw", position:"fixed"}} />
-      {curves.map((curve, curveIndex) => {
+      {Object.keys(duplicate).map((dataKey, dataIndex) => {
         return (
-          <div key={curveIndex}>
-            <svg style={{zIndex:(data[curve.split("_")[1]] && data[curve.split("_")[1]].enabled)?2:1, position:"fixed", pointerEvents:"none"}} width="999999999px" height="999999999px"><path style={{pointerEvents:"auto"}} stroke={(data[curve.split("_")[1]] && data[curve.split("_")[1]].enabled)? colors[currentColor][0] : colors[currentColor][1]} opacity={(data[curve.split("_")[1]] && data[curve.split("_")[1]].enabled)?"1":"0.5"} strokeWidth="8" fill="none" d={findCurve(curve.split("_")[0], curve.split("_")[1])} /></svg>
-          </div>
+          <svg key={dataIndex} style={{zIndex:duplicate[dataKey].enabled?2:1, position:"absolute", pointerEvents:"none"}} width="999999999px" height="999999999px"><path style={{pointerEvents:"auto"}} stroke={duplicate[dataKey].enabled? colors[currentColor][0] : colors[currentColor][1]} opacity={duplicate[dataKey].enabled?"1":"0.5"} strokeWidth="8" fill="none" d={findCurve(dataKey.substring(0, dataKey.length - 1), dataKey)} /></svg>
         )
       })}
       <div ref={(element) => {refs.current["screen"] = element}} style={{zIndex:3, display:"flex", flexDirection:"row", justifyContent:"flex-start", alignItems:"stretch"}}>
@@ -510,8 +471,8 @@ function App() {
                     {(dataKey !== "1" && data[dataKey] && !((urlType(data[dataKey].content)).match(/^(unknown|image|video|audio|localimage|localvideo|localaudio)$/))) && <iframe style={{zIndex:4, minWidth:width+"px", maxWidth:width+"px", aspectRatio:1, backgroundColor:"black", border:0}} src={urlType(data[dataKey].content)} frameBorder="0" allow="fullscreen; accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen={true}></iframe>}
                     <div key={rowIndex} style={{display:"flex", flexDirection:"row", justifyContent:"center", alignItems:"center"}}>
                       {(dataKey === "1") && <div style={{zIndex:5, cursor:"pointer", marginLeft:"64px", minWidth:"8px", minHeight:"calc(100% - 8px)", borderBottomLeftRadius:"999px", borderTopLeftRadius:"999px", backgroundColor:"white"}} onClick={() => {resetTree()}} />}
-                      {(dataKey !== "1") && <div style={{zIndex:5, cursor:"pointer", minWidth:"8px", minHeight:"8px", height:"unset", borderRadius:"999px", backgroundColor:"white"}} onClick={() => {removeNode(dataKey, data)}} />}
-                      <textarea ref={(element) => {refs.current[dataKey] = element}} style={{zIndex:4, fontWeight:"bold", minWidth:width+"px", maxWidth:width+"px", resize:"none", overflow:"hidden", color:"white", fontWeight:"bold", margin:"4px 0px 4px 0px", padding:"0px 4px", backgroundColor:data[dataKey]?.enabled? colors[currentColor][0] : colors[currentColor][1], border:data[dataKey]?.enabled? "8px solid "+colors[currentColor][0] : "8px solid "+colors[currentColor][1], borderRadius:"0px"}} value={data[dataKey]?.content || ""} onClick={() => {enable(dataKey)}} onChange={(e) => {if (data[dataKey]) {data[dataKey].content = e.target.value; setData({...data}); autoHeight(e.target)}}} />
+                      {(dataKey !== "1") && <div style={{zIndex:5, cursor:"pointer", minWidth:"8px", minHeight:"8px", height:"unset", borderRadius:"999px", backgroundColor:"white"}} onClick={() => {removeNode(dataKey); setData({...data})}} />}
+                      <textarea ref={(element) => {refs.current[dataKey] = element}} style={{zIndex:4, fontWeight:"bold", minWidth:width+"px", maxWidth:width+"px", resize:"none", overflow:"hidden", color:"white", fontWeight:"bold", margin:"4px 0px 4px 0px", padding:"0px 4px", backgroundColor:data[dataKey]?.enabled? colors[currentColor][0] : colors[currentColor][1], border:data[dataKey]?.enabled? "8px solid "+colors[currentColor][0] : "8px solid "+colors[currentColor][1], borderRadius:"0px"}} value={dataKey+" "+data[dataKey]?.content || ""} onClick={() => {enable(dataKey)}} onChange={(e) => {if (data[dataKey]) {data[dataKey].content = e.target.value; setData({...data}); autoHeight(e.target)}}} />
                       <div style={{display:"flex", flexDirection:"column", justifyContent:"center", alignItems:"center", marginLeft:"-3px"}}>
                         {canUp(dataKey) ? <div style={{zIndex:5, cursor:"pointer"}} onClick={() => {moveUp(dataKey)}}>&#9652;</div> : <div>&#9652;</div>}
                         <div style={{zIndex:5, cursor:"pointer", minWidth:"8px", minHeight:"8px", borderRadius:"999px", backgroundColor:"white"}} onClick={() => {insertNode(dataKey)}} />
