@@ -6,6 +6,7 @@ function App() {
   const limit = 8
   const salt = "ytlas"
   const refs = useRef([])
+  const path = window.location.href.substring(0, window.location.href.length - window.location.href.split("/")[window.location.href.split("/").length - 1].length)
   const colors = [["mediumseagreen","purple"],["palevioletred","darkcyan"],["darkgoldenrod","indigo"],["darkkhaki","darkolivegreen"],["slategray","darkslategray"],["crimson","black"]]
   const [currentColor, setCurrentColor] = useState(0)
   const [data, setData] = useState({})
@@ -28,7 +29,7 @@ function App() {
       window.removeEventListener('resize', triggerRerender)
       window.removeEventListener('scroll', triggerRerender)
     }
-  })
+  }, [])
 
   const urlType = (url) => {
     if (!url) {
@@ -45,6 +46,14 @@ function App() {
           if (partsTwo.length > 1) {
             return partsTwo[0]
           }
+        }
+      } else if (url.match(/^.\//) || url.match(/^..\//)) {
+        if (url.match(/\.(jpeg|jpg|gif|png|webp)$/) !== null) {
+          return "localimage"
+        } else if (url.match(/\.(mp4|webm)$/) !== null) {
+          return "localvideo"
+        } else if (url.match(/\.(wav|mp3|mpeg)$/) !== null) {
+          return "localaudio"
         }
       }
       return "unknown"
@@ -477,11 +486,17 @@ function App() {
                     {(dataKey === "1" && data[dataKey] && urlType(data[dataKey].content) === "image") && <div style={{zIndex:4, marginLeft:"72px", marginRight:"8px", minWidth:width+"px", maxWidth:width+"px", aspectRatio:1, backgroundColor:"black", backgroundPosition:'center', backgroundRepeat:"no-repeat", backgroundSize:'contain', backgroundImage:'url("'+data[dataKey].content+'")'}} />}
                     {(dataKey === "1" && data[dataKey] && urlType(data[dataKey].content) === "video") && <video style={{zIndex:4, marginLeft:"72px", marginRight:"8px", aspectRatio:1, backgroundColor:"black"}} width={width+"px"} controls ><source src={data[dataKey].content} /></video>}
                     {(dataKey === "1" && data[dataKey] && urlType(data[dataKey].content) === "audio") && <audio style={{zIndex:4, marginLeft:"72px", marginRight:"8px", minWidth:width+"px", maxWidth:width+"px", aspectRatio:1, backgroundColor:"black"}} controls ><source src={data[dataKey].content} /></audio>}
-                    {(dataKey === "1" && data[dataKey] && !((urlType(data[dataKey].content)).match(/^(unknown|image|video|audio)$/))) && <iframe style={{zIndex:4, marginLeft:"72px", marginRight:"8px", minWidth:width+"px", maxWidth:width+"px", aspectRatio:1, backgroundColor:"black"}} src={urlType(data[dataKey].content)} frameborder="0" allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>}
+                    {(dataKey === "1" && data[dataKey] && urlType(data[dataKey].content) === "localimage") && <div style={{zIndex:4, marginLeft:"72px", marginRight:"8px", minWidth:width+"px", maxWidth:width+"px", aspectRatio:1, backgroundColor:"black", backgroundPosition:'center', backgroundRepeat:"no-repeat", backgroundSize:'contain', backgroundImage:'url("'+path+data[dataKey].content+'")'}} />}
+                    {(dataKey === "1" && data[dataKey] && urlType(data[dataKey].content) === "localvideo") && <video style={{zIndex:4, marginLeft:"72px", marginRight:"8px", aspectRatio:1, backgroundColor:"black"}} width={width+"px"} controls ><source src={path+data[dataKey].content} /></video>}
+                    {(dataKey === "1" && data[dataKey] && urlType(data[dataKey].content) === "localaudio") && <audio style={{zIndex:4, marginLeft:"72px", marginRight:"8px", minWidth:width+"px", maxWidth:width+"px", aspectRatio:1, backgroundColor:"black"}} controls ><source src={path+data[dataKey].content} /></audio>}
+                    {(dataKey === "1" && data[dataKey] && !((urlType(data[dataKey].content)).match(/^(unknown|image|video|audio|localimage|localvideo|localaudio)$/))) && <iframe style={{zIndex:4, marginLeft:"72px", marginRight:"8px", minWidth:width+"px", maxWidth:width+"px", aspectRatio:1, backgroundColor:"black"}} src={urlType(data[dataKey].content)} frameborder="0" allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>}
                     {(dataKey !== "1" && data[dataKey] && urlType(data[dataKey].content) === "image") && <div style={{zIndex:4, minWidth:width+"px", maxWidth:width+"px", aspectRatio:1, backgroundColor:"black", backgroundPosition:'center', backgroundRepeat:"no-repeat", backgroundSize:'contain', backgroundImage:'url("'+data[dataKey].content+'")'}} />}
                     {(dataKey !== "1" && data[dataKey] && urlType(data[dataKey].content) === "video") && <video style={{zIndex:4, aspectRatio:1, backgroundColor:"black"}} width={width+"px"} controls ><source src={data[dataKey].content} /></video>}
                     {(dataKey !== "1" && data[dataKey] && urlType(data[dataKey].content) === "audio") && <audio style={{zIndex:4, minWidth:width+"px", maxWidth:width+"px", aspectRatio:1, backgroundColor:"black"}} controls ><source src={data[dataKey].content} /></audio>}
-                    {(dataKey !== "1" && data[dataKey] && !((urlType(data[dataKey].content)).match(/^(unknown|image|video|audio)$/))) && <iframe style={{zIndex:4, minWidth:width+"px", maxWidth:width+"px", aspectRatio:1, backgroundColor:"black"}} src={urlType(data[dataKey].content)} frameborder="0" allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>}
+                    {(dataKey !== "1" && data[dataKey] && urlType(data[dataKey].content) === "localimage") && <div style={{zIndex:4, minWidth:width+"px", maxWidth:width+"px", aspectRatio:1, backgroundColor:"black", backgroundPosition:'center', backgroundRepeat:"no-repeat", backgroundSize:'contain', backgroundImage:'url("'+path+data[dataKey].content+'")'}} />}
+                    {(dataKey !== "1" && data[dataKey] && urlType(data[dataKey].content) === "localvideo") && <video style={{zIndex:4, aspectRatio:1, backgroundColor:"black"}} width={width+"px"} controls ><source src={path+data[dataKey].content} /></video>}
+                    {(dataKey !== "1" && data[dataKey] && urlType(data[dataKey].content) === "localaudio") && <audio style={{zIndex:4, minWidth:width+"px", maxWidth:width+"px", aspectRatio:1, backgroundColor:"black"}} controls ><source src={path+data[dataKey].content} /></audio>}
+                    {(dataKey !== "1" && data[dataKey] && !((urlType(data[dataKey].content)).match(/^(unknown|image|video|audio|localimage|localvideo|localaudio)$/))) && <iframe style={{zIndex:4, minWidth:width+"px", maxWidth:width+"px", aspectRatio:1, backgroundColor:"black"}} src={urlType(data[dataKey].content)} frameborder="0" allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>}
                     <div key={rowIndex} style={{display:"flex", flexDirection:"row", justifyContent:"center", alignItems:"center"}}>
                       {(dataKey === "1") && <div style={{zIndex:5, cursor:"pointer", marginLeft:"64px", minWidth:"8px", minHeight:"calc(100% - 8px)", borderBottomLeftRadius:"999px", borderTopLeftRadius:"999px", backgroundColor:"white"}} onClick={() => {resetTree()}} />}
                       {(dataKey !== "1") && <div style={{zIndex:5, cursor:"pointer", minWidth:"8px", minHeight:"8px", height:"unset", borderRadius:"999px", backgroundColor:"white"}} onClick={() => {removeNode(dataKey, data)}} />}
