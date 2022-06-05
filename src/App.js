@@ -13,6 +13,7 @@ function App() {
   const [columns, setColumns] = useState({})
   const [curves, setCurves] = useState([])
   const [selected, setSelected] = useState(null)
+  const [image, setImage] = useState(null)
   
   const [zoom, setZoom] = useState(100)
   const [trigger, setTrigger] = useState(0)
@@ -48,27 +49,29 @@ function App() {
           }
         }
       } else if (url.match(/^.\//) || url.match(/^..\//)) {
-        if (url.match(/\.(jpeg|jpg|gif|png|webp)$/) !== null) {
+        if (url.match(/\.(jpeg|jpg|gif|png|webp|bmp|svg)$/) !== null) {
           return "localimage"
-        } else if (url.match(/\.(mp4|webm)$/) !== null) {
+        } else if (url.match(/\.(mp4|webm|mov|ogg)$/) !== null) {
           return "localvideo"
-        } else if (url.match(/\.(wav|mp3|mpeg)$/) !== null) {
+        } else if (url.match(/\.(wav|wave|mp3|aac)$/) !== null) {
           return "localaudio"
         }
       }
       return "unknown"
     }
-    if (url.match(/\.(jpeg|jpg|gif|png|webp)$/) !== null) {
+    if (url.match(/\.(jpeg|jpg|gif|png|webp|bmp|svg)$/) !== null) {
       return "image"
-    } else if (url.match(/\.(mp4|webm)$/) !== null) {
+    } else if (url.match(/\.(mp4|webm|mov|ogg)$/) !== null) {
       return "video"
-    } else if (url.match(/\.(wav|mp3|mpeg)$/) !== null) {
+    } else if (url.match(/\.(wav|wave|mp3|aac)$/) !== null) {
       return "audio"
-    } else if (url.match(/\.(jpeg|jpg|gif|png|webp)/) !== null) {
+    } else if (url.match(/embed/)) {
+      return url
+    } else if (url.match(/\.(jpeg|jpg|gif|png|webp|bmp|svg)/) !== null) {
       return "image"
-    } else if (url.match(/\.(mp4|webm)/) !== null) {
+    } else if (url.match(/\.(mp4|webm|mov|ogg)/) !== null) {
       return "video"
-    } else if (url.match(/\.(wav|mp3|mpeg)/) !== null) {
+    } else if (url.match(/\.(wav|wave|mp3|aac)/) !== null) {
       return "audio"
     } else if (url.match(/(www.youtube.com\/watch?)/)) {
       const partsOne = url.split('v=')
@@ -483,20 +486,28 @@ function App() {
               {columns[columnKey].map((dataKey, rowIndex) => {
                 return (
                   <div key={rowIndex} style={{display:"flex", flexDirection:"column", justifyContent:"center", alignItems:"center", marginRight:"64px", width:width+16+"px"}}>
-                    {(dataKey === "1" && data[dataKey] && urlType(data[dataKey].content) === "image") && <div style={{zIndex:4, marginLeft:"72px", marginRight:"8px", minWidth:width+"px", maxWidth:width+"px", aspectRatio:1, backgroundColor:"black", backgroundPosition:'center', backgroundRepeat:"no-repeat", backgroundSize:'contain', backgroundImage:'url("'+data[dataKey].content+'")'}} />}
+                    {(dataKey === "1" && data[dataKey] && urlType(data[dataKey].content) === "image") && <div style={{zIndex:4, marginLeft:"72px", marginRight:"8px", minWidth:width+"px", maxWidth:width+"px", aspectRatio:1, backgroundColor:"black", backgroundPosition:'center', backgroundRepeat:"no-repeat", backgroundSize:'cover', backgroundImage:'url("'+data[dataKey].content+'")', cursor:"pointer"}} onClick={() => {setImage('url("'+data[dataKey].content+'")')}} >
+                      <div style={{zIndex:5, position:"absolute", minWidth:width+"px", maxWidth:width+"px", aspectRatio:1, backgroundColor:"rgba(0,0,0,0.75)", backgroundPosition:'center', backgroundRepeat:"no-repeat", backgroundSize:'contain', backgroundImage:'url("'+data[dataKey].content+'")', cursor:"pointer"}} onClick={() => {setImage('url("'+data[dataKey].content+'")')}} />
+                    </div>}
                     {(dataKey === "1" && data[dataKey] && urlType(data[dataKey].content) === "video") && <video style={{zIndex:4, marginLeft:"72px", marginRight:"8px", aspectRatio:1, backgroundColor:"black"}} width={width+"px"} controls ><source src={data[dataKey].content} /></video>}
                     {(dataKey === "1" && data[dataKey] && urlType(data[dataKey].content) === "audio") && <audio style={{zIndex:4, marginLeft:"72px", marginRight:"8px", minWidth:width+"px", maxWidth:width+"px", aspectRatio:1, backgroundColor:"black"}} controls ><source src={data[dataKey].content} /></audio>}
-                    {(dataKey === "1" && data[dataKey] && urlType(data[dataKey].content) === "localimage") && <div style={{zIndex:4, marginLeft:"72px", marginRight:"8px", minWidth:width+"px", maxWidth:width+"px", aspectRatio:1, backgroundColor:"black", backgroundPosition:'center', backgroundRepeat:"no-repeat", backgroundSize:'contain', backgroundImage:'url("'+path+data[dataKey].content+'")'}} />}
+                    {(dataKey === "1" && data[dataKey] && urlType(data[dataKey].content) === "localimage") && <div style={{zIndex:4, marginLeft:"72px", marginRight:"8px", minWidth:width+"px", maxWidth:width+"px", aspectRatio:1, backgroundColor:"black", backgroundPosition:'center', backgroundRepeat:"no-repeat", backgroundSize:'cover', backgroundImage:'url("'+path+data[dataKey].content+'")', cursor:"pointer"}} onClick={() => {setImage('url("'+path+data[dataKey].content+'")')}} >
+                      <div style={{zIndex:5, position:"absolute", minWidth:width+"px", maxWidth:width+"px", aspectRatio:1, backgroundColor:"rgba(0,0,0,0.75)", backgroundPosition:'center', backgroundRepeat:"no-repeat", backgroundSize:'contain', backgroundImage:'url("'+path+data[dataKey].content+'")', cursor:"pointer"}} onClick={() => {setImage('url("'+path+data[dataKey].content+'")')}} />
+                    </div>}
                     {(dataKey === "1" && data[dataKey] && urlType(data[dataKey].content) === "localvideo") && <video style={{zIndex:4, marginLeft:"72px", marginRight:"8px", aspectRatio:1, backgroundColor:"black"}} width={width+"px"} controls ><source src={path+data[dataKey].content} /></video>}
                     {(dataKey === "1" && data[dataKey] && urlType(data[dataKey].content) === "localaudio") && <audio style={{zIndex:4, marginLeft:"72px", marginRight:"8px", minWidth:width+"px", maxWidth:width+"px", aspectRatio:1, backgroundColor:"black"}} controls ><source src={path+data[dataKey].content} /></audio>}
-                    {(dataKey === "1" && data[dataKey] && !((urlType(data[dataKey].content)).match(/^(unknown|image|video|audio|localimage|localvideo|localaudio)$/))) && <iframe style={{zIndex:4, marginLeft:"72px", marginRight:"8px", minWidth:width+"px", maxWidth:width+"px", aspectRatio:1, backgroundColor:"black"}} src={urlType(data[dataKey].content)} frameborder="0" allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>}
-                    {(dataKey !== "1" && data[dataKey] && urlType(data[dataKey].content) === "image") && <div style={{zIndex:4, minWidth:width+"px", maxWidth:width+"px", aspectRatio:1, backgroundColor:"black", backgroundPosition:'center', backgroundRepeat:"no-repeat", backgroundSize:'contain', backgroundImage:'url("'+data[dataKey].content+'")'}} />}
+                    {(dataKey === "1" && data[dataKey] && !((urlType(data[dataKey].content)).match(/^(unknown|image|video|audio|localimage|localvideo|localaudio)$/))) && <iframe style={{zIndex:4, marginLeft:"72px", marginRight:"8px", minWidth:width+"px", maxWidth:width+"px", aspectRatio:1, backgroundColor:"black", border:0}} src={urlType(data[dataKey].content)} frameBorder="0" allow="fullscreen; accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen={true}></iframe>}
+                    {(dataKey !== "1" && data[dataKey] && urlType(data[dataKey].content) === "image") && <div style={{zIndex:4, minWidth:width+"px", maxWidth:width+"px", aspectRatio:1, backgroundColor:"black", backgroundPosition:'center', backgroundRepeat:"no-repeat", backgroundSize:'cover', backgroundImage:'url("'+data[dataKey].content+'")', cursor:"pointer"}} onClick={() => {setImage('url("'+data[dataKey].content+'")')}} >
+                      <div style={{zIndex:5, position:"absolute", minWidth:width+"px", maxWidth:width+"px", aspectRatio:1, backgroundColor:"rgba(0,0,0,0.75)", backgroundPosition:'center', backgroundRepeat:"no-repeat", backgroundSize:'contain', backgroundImage:'url("'+data[dataKey].content+'")', cursor:"pointer"}} onClick={() => {setImage('url("'+data[dataKey].content+'")')}} />
+                    </div>}
                     {(dataKey !== "1" && data[dataKey] && urlType(data[dataKey].content) === "video") && <video style={{zIndex:4, aspectRatio:1, backgroundColor:"black"}} width={width+"px"} controls ><source src={data[dataKey].content} /></video>}
                     {(dataKey !== "1" && data[dataKey] && urlType(data[dataKey].content) === "audio") && <audio style={{zIndex:4, minWidth:width+"px", maxWidth:width+"px", aspectRatio:1, backgroundColor:"black"}} controls ><source src={data[dataKey].content} /></audio>}
-                    {(dataKey !== "1" && data[dataKey] && urlType(data[dataKey].content) === "localimage") && <div style={{zIndex:4, minWidth:width+"px", maxWidth:width+"px", aspectRatio:1, backgroundColor:"black", backgroundPosition:'center', backgroundRepeat:"no-repeat", backgroundSize:'contain', backgroundImage:'url("'+path+data[dataKey].content+'")'}} />}
+                    {(dataKey !== "1" && data[dataKey] && urlType(data[dataKey].content) === "localimage") && <div style={{zIndex:4, minWidth:width+"px", maxWidth:width+"px", aspectRatio:1, backgroundColor:"black", backgroundPosition:'center', backgroundRepeat:"no-repeat", backgroundSize:'cover', backgroundImage:'url("'+path+data[dataKey].content+'")', cursor:"pointer"}} onClick={() => {setImage('url("'+path+data[dataKey].content+'")')}} >
+                      <div style={{zIndex:5, position:"absolute", minWidth:width+"px", maxWidth:width+"px", aspectRatio:1, backgroundColor:"rgba(0,0,0,0.75)", backgroundPosition:'center', backgroundRepeat:"no-repeat", backgroundSize:'contain', backgroundImage:'url("'+path+data[dataKey].content+'")', cursor:"pointer"}} onClick={() => {setImage('url("'+path+data[dataKey].content+'")')}} />
+                    </div>}
                     {(dataKey !== "1" && data[dataKey] && urlType(data[dataKey].content) === "localvideo") && <video style={{zIndex:4, aspectRatio:1, backgroundColor:"black"}} width={width+"px"} controls ><source src={path+data[dataKey].content} /></video>}
                     {(dataKey !== "1" && data[dataKey] && urlType(data[dataKey].content) === "localaudio") && <audio style={{zIndex:4, minWidth:width+"px", maxWidth:width+"px", aspectRatio:1, backgroundColor:"black"}} controls ><source src={path+data[dataKey].content} /></audio>}
-                    {(dataKey !== "1" && data[dataKey] && !((urlType(data[dataKey].content)).match(/^(unknown|image|video|audio|localimage|localvideo|localaudio)$/))) && <iframe style={{zIndex:4, minWidth:width+"px", maxWidth:width+"px", aspectRatio:1, backgroundColor:"black"}} src={urlType(data[dataKey].content)} frameborder="0" allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>}
+                    {(dataKey !== "1" && data[dataKey] && !((urlType(data[dataKey].content)).match(/^(unknown|image|video|audio|localimage|localvideo|localaudio)$/))) && <iframe style={{zIndex:4, minWidth:width+"px", maxWidth:width+"px", aspectRatio:1, backgroundColor:"black", border:0}} src={urlType(data[dataKey].content)} frameBorder="0" allow="fullscreen; accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen={true}></iframe>}
                     <div key={rowIndex} style={{display:"flex", flexDirection:"row", justifyContent:"center", alignItems:"center"}}>
                       {(dataKey === "1") && <div style={{zIndex:5, cursor:"pointer", marginLeft:"64px", minWidth:"8px", minHeight:"calc(100% - 8px)", borderBottomLeftRadius:"999px", borderTopLeftRadius:"999px", backgroundColor:"white"}} onClick={() => {resetTree()}} />}
                       {(dataKey !== "1") && <div style={{zIndex:5, cursor:"pointer", minWidth:"8px", minHeight:"8px", height:"unset", borderRadius:"999px", backgroundColor:"white"}} onClick={() => {removeNode(dataKey, data)}} />}
@@ -514,6 +525,7 @@ function App() {
           )
         })}
       </div>
+      {image !== null && <div style={{zIndex:10, cursor:"pointer", position:"fixed", left:"50%", top:"50%", transform:"translate(-50%,-50%)", width:"100vw", height:"100vh", backgroundColor:"rgba(0,0,0,0.75)", backgroundPosition:'center', backgroundRepeat:"no-repeat", backgroundSize:'contain', backgroundImage:image}} onClick={() => {setImage(null)}} />}
       <div style={{zIndex:9, transformOrigin:"left bottom", transform:"scale("+100/zoom+")", position:"fixed", left:"0", bottom:"0", display:"flex", flexDirection:"row", justifyContent:"flex-start", alignItems:"center", margin:"4px 0px 4px 0px", padding:"0px 4px", borderRadius:"0px", minWidth:"120px"}}>
         <svg style={{zIndex:9, cursor:"pointer", margin:"4px"}} fill="white" width="32px" height="32px" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512" onClick={() => {open()}}><path d="M147.8 192H480V144C480 117.5 458.5 96 432 96h-160l-64-64h-160C21.49 32 0 53.49 0 80v328.4l90.54-181.1C101.4 205.6 123.4 192 147.8 192zM543.1 224H147.8C135.7 224 124.6 230.8 119.2 241.7L0 480h447.1c12.12 0 23.2-6.852 28.62-17.69l96-192C583.2 249 567.7 224 543.1 224z"/></svg>
         <svg style={{zIndex:9, cursor:"pointer", margin:"4px", marginRight:"32px"}}  fill="white" width="32px" height="32px" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" onClick={() => {save()}}><path d="M433.1 129.1l-83.9-83.9C342.3 38.32 327.1 32 316.1 32H64C28.65 32 0 60.65 0 96v320c0 35.35 28.65 64 64 64h320c35.35 0 64-28.65 64-64V163.9C448 152.9 441.7 137.7 433.1 129.1zM224 416c-35.34 0-64-28.66-64-64s28.66-64 64-64s64 28.66 64 64S259.3 416 224 416zM320 208C320 216.8 312.8 224 304 224h-224C71.16 224 64 216.8 64 208v-96C64 103.2 71.16 96 80 96h224C312.8 96 320 103.2 320 112V208z"/></svg>
@@ -523,7 +535,7 @@ function App() {
           )
         })}
       </div>
-      <div style={{zIndex:9, transformOrigin:"right bottom", transform:"scale("+100/zoom+")", position:"fixed", right:"0", bottom:"0", zIndex:4, display:"flex", flexDirection:"row", justifyContent:"space-evenly", alignItems:"center", margin:"4px 0px 4px 0px", padding:"0px 4px", borderRadius:"0px", minWidth:"120px", fontSize:"small"}}>TreeMinder v1.0</div>
+      <div style={{zIndex:9, transformOrigin:"right bottom", transform:"scale("+100/zoom+")", position:"fixed", right:"0", bottom:"0", display:"flex", flexDirection:"row", justifyContent:"space-evenly", alignItems:"center", margin:"4px 0px 4px 0px", padding:"0px 4px", borderRadius:"0px", minWidth:"120px", fontSize:"small"}}>TreeMinder v1.0</div>
     </div>
   )
 }
