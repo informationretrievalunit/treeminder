@@ -1,7 +1,7 @@
 # how to use?
 - just open build/index.html in your favorite browser (and hopefully it won't mess up with the visuals)
 - you can delete things other than the build folder, since the rest are meant for developers, and you can change name of the build folder if you need too
-- to show a local resource with relative path, put it in the same folder as index.html and use ./fileNameHere.fileExtensionHere
+- to show a local resource with relative path, put it in the same folder with index.html and use ./fileNameHere.fileExtensionHere
 - saved maps get downloaded by your browser, so you can check where they are usually downloaded when you want to open one
 
 # treeminder
