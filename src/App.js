@@ -14,6 +14,8 @@ function App() {
   const [columns, setColumns] = useState({})
   const [selected, setSelected] = useState(null)
   const [image, setImage] = useState(null)
+  const [bodyWidth, setBodyWidth] = useState(refs.current["screen"] ? refs.current["screen"].getBoundingClientRect().width : window.innerWidth)
+  const [bodyHeight, setBodyHeight] = useState(refs.current["screen"] ? refs.current["screen"].getBoundingClientRect().height : window.innerHeight)
   
   const [zoom, setZoom] = useState(100)
   const [trigger, setTrigger] = useState(0)
@@ -425,8 +427,14 @@ function App() {
       }
       setTimeout(() => {setHeights()}, 1)
       if (JSON.stringify(duplicate) !== JSON.stringify(data)) {
-        setTimeout(() => {setDuplicate({...data})}, 2)
+        setTimeout(() => {
+          setDuplicate({...data})
+        }, 2)
       }
+      setTimeout(() => {
+        setBodyWidth(refs.current["screen"] ? refs.current["screen"].getBoundingClientRect().width : window.innerWidth)
+        setBodyHeight(refs.current["screen"] ? refs.current["screen"].getBoundingClientRect().height : window.innerHeight)
+      }, 3)
     }
     //console.log("data:", data)
   }, [data, trigger])
@@ -437,7 +445,7 @@ function App() {
       <div style={{backgroundColor:"rgb(30,30,30)", minHeight:"100vh", minWidth:"100vw", position:"fixed"}} />
       {Object.keys(duplicate).map((dataKey, dataIndex) => {
         return (
-          <svg key={dataIndex} style={{zIndex:duplicate[dataKey].enabled?2:1, position:"absolute", pointerEvents:"none"}} width="999999999px" height="999999999px"><path style={{pointerEvents:"auto"}} stroke={duplicate[dataKey].enabled? colors[currentColor][0] : colors[currentColor][1]} opacity={duplicate[dataKey].enabled?"1":"0.5"} strokeWidth="8" fill="none" d={findCurve(dataKey.substring(0, dataKey.length - 1), dataKey)} /></svg>
+          <svg key={dataIndex} style={{zIndex:duplicate[dataKey].enabled?2:1, position:"absolute", pointerEvents:"none"}} width={bodyWidth} height={bodyHeight}><path style={{pointerEvents:"auto"}} stroke={duplicate[dataKey].enabled? colors[currentColor][0] : colors[currentColor][1]} opacity={duplicate[dataKey].enabled?"1":"0.5"} strokeWidth="8" fill="none" d={findCurve(dataKey.substring(0, dataKey.length - 1), dataKey)} /></svg>
         )
       })}
       <div ref={(element) => {refs.current["screen"] = element}} style={{zIndex:3, display:"flex", flexDirection:"row", justifyContent:"flex-start", alignItems:"stretch"}}>
@@ -472,7 +480,8 @@ function App() {
                     <div key={rowIndex} style={{display:"flex", flexDirection:"row", justifyContent:"center", alignItems:"center"}}>
                       {(dataKey === "1") && <div style={{zIndex:5, cursor:"pointer", marginLeft:"64px", minWidth:"8px", minHeight:"calc(100% - 8px)", borderBottomLeftRadius:"999px", borderTopLeftRadius:"999px", backgroundColor:"white"}} onClick={() => {resetTree()}} />}
                       {(dataKey !== "1") && <div style={{zIndex:5, cursor:"pointer", minWidth:"8px", minHeight:"8px", height:"unset", borderRadius:"999px", backgroundColor:"white"}} onClick={() => {removeNode(dataKey); setData({...data})}} />}
-                      <textarea ref={(element) => {refs.current[dataKey] = element}} style={{zIndex:4, fontWeight:"bold", minWidth:width+"px", maxWidth:width+"px", resize:"none", overflow:"hidden", color:"white", fontWeight:"bold", margin:"4px 0px 4px 0px", padding:"0px 4px", backgroundColor:data[dataKey]?.enabled? colors[currentColor][0] : colors[currentColor][1], border:data[dataKey]?.enabled? "8px solid "+colors[currentColor][0] : "8px solid "+colors[currentColor][1], borderRadius:"0px"}} value={dataKey+" "+data[dataKey]?.content || ""} onClick={() => {enable(dataKey)}} onChange={(e) => {if (data[dataKey]) {data[dataKey].content = e.target.value; setData({...data}); autoHeight(e.target)}}} />
+                      {/* <textarea ref={(element) => {refs.current[dataKey] = element}} style={{zIndex:4, fontWeight:"bold", minWidth:width+"px", maxWidth:width+"px", resize:"none", overflow:"hidden", color:"white", fontWeight:"bold", margin:"4px 0px 4px 0px", padding:"0px 4px", backgroundColor:data[dataKey]?.enabled? colors[currentColor][0] : colors[currentColor][1], border:data[dataKey]?.enabled? "8px solid "+colors[currentColor][0] : "8px solid "+colors[currentColor][1], borderRadius:"0px"}} value={dataKey+" "+data[dataKey]?.content || ""} onClick={() => {enable(dataKey)}} onChange={(e) => {if (data[dataKey]) {data[dataKey].content = e.target.value; setData({...data}); autoHeight(e.target)}}} /> */}
+                      <textarea ref={(element) => {refs.current[dataKey] = element}} style={{zIndex:4, fontWeight:"bold", minWidth:width+"px", maxWidth:width+"px", resize:"none", overflow:"hidden", color:"white", fontWeight:"bold", margin:"4px 0px 4px 0px", padding:"0px 4px", backgroundColor:data[dataKey]?.enabled? colors[currentColor][0] : colors[currentColor][1], border:data[dataKey]?.enabled? "8px solid "+colors[currentColor][0] : "8px solid "+colors[currentColor][1], borderRadius:"0px"}} value={data[dataKey]?.content || ""} onClick={() => {enable(dataKey)}} onChange={(e) => {if (data[dataKey]) {data[dataKey].content = e.target.value; setData({...data}); autoHeight(e.target)}}} />
                       <div style={{display:"flex", flexDirection:"column", justifyContent:"center", alignItems:"center", marginLeft:"-3px"}}>
                         {canUp(dataKey) ? <div style={{zIndex:5, cursor:"pointer"}} onClick={() => {moveUp(dataKey)}}>&#9652;</div> : <div>&#9652;</div>}
                         <div style={{zIndex:5, cursor:"pointer", minWidth:"8px", minHeight:"8px", borderRadius:"999px", backgroundColor:"white"}} onClick={() => {insertNode(dataKey)}} />
