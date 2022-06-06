@@ -3,7 +3,7 @@ a free mind mapping tool, which is designed to especially help noting down possi
 
 how to use?
 - just open index.html in your favorite browser (and hopefully it won't mess up with the visuals)
-- to show a local resource with relative path, put it in the same folder as index.html and use ./fileNameHere.fileExtensionHere
+- to show a local resource with relative path, put it in the same folder with index.html and use ./fileNameHere.fileExtensionHere
 - saved maps get downloaded by your browser, so you can check where they are usually downloaded when you want to open one
 
 features
