@@ -74,7 +74,7 @@ function App() {
       return "video"
     } else if (url.match(/\.(wav|wave|mp3|aac)/) !== null) {
       return "audio"
-    } else if (url.match(/(www.youtube.com\/watch?)/)) {
+    } else if (url.match(/(youtube.com\/watch)/)) {
       const partsOne = url.split('v=')
       if (partsOne.length > 1) {
         const partsTwo = partsOne[1].split('&')
@@ -89,6 +89,8 @@ function App() {
       if (partsOne.length > 1) {
         return "https://www.youtube.com/embed/"+partsOne[1]
       }
+    } else if (url.match(/(images.unsplash.com\/photo)/)) {
+      return "image"
     }
     return "unknown"
   }
