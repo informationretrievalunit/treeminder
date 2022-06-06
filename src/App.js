@@ -426,7 +426,7 @@ function App() {
         setColumns(newColumns)
       }
       setTimeout(() => {setHeights()}, 1)
-      if (JSON.stringify(duplicate) !== JSON.stringify(data)) {
+      if (true || JSON.stringify(duplicate) !== JSON.stringify(data)) {
         setTimeout(() => {
           setDuplicate({...data})
         }, 2)
