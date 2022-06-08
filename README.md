@@ -17,3 +17,4 @@ a free mind mapping tool, which is designed to especially help noting down possi
 
 # restrictions
 - each node can have up to 8 nodes
+- maximum tree length is limited to 16 nodes
