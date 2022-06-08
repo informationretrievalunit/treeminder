@@ -16,3 +16,4 @@ features
 
 restrictions
 - each node can have up to 8 nodes
+- maximum tree size is limited to 16

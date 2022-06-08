@@ -190,7 +190,8 @@ function App() {
       increment += 1
       uid = toKey * 10 + increment
     }
-    if (parseInt((uid + "").substring((uid + "").length - 1, (uid + "").length)) > limit || (uid + "").substring(0, (uid + "").length - 1) !== toKey) {
+    const stringified = uid + ""
+    if (stringified.length > 16 || parseInt(stringified.substring(stringified.length - 1, stringified.length)) > limit || stringified.substring(0, stringified.length - 1) !== toKey) {
       return
     }
     // if (columns[(uid + "").length - 1].length >= limit) {
@@ -216,6 +217,10 @@ function App() {
     if (key === selected) {
       setSelected(0)
     }
+  }
+
+  const canInsertTo = (key) => {
+    return (key + "").length < 16
   }
 
   const exchange = (keyOne, keyTwo, data) => {
@@ -467,7 +472,7 @@ function App() {
                     </div>}
                     {(dataKey === "1" && data[dataKey] && urlType(data[dataKey].content) === "localvideo") && <video style={{zIndex:4, marginLeft:"72px", marginRight:"8px", aspectRatio:1, backgroundColor:"black"}} width={width+"px"} controls ><source src={path+data[dataKey].content} /></video>}
                     {(dataKey === "1" && data[dataKey] && urlType(data[dataKey].content) === "localaudio") && <audio style={{zIndex:4, marginLeft:"72px", marginRight:"8px", minWidth:width+"px", maxWidth:width+"px", aspectRatio:1, backgroundColor:"black"}} controls ><source src={path+data[dataKey].content} /></audio>}
-                    {(dataKey === "1" && data[dataKey] && !((urlType(data[dataKey].content)).match(/^(unknown|image|video|audio|localimage|localvideo|localaudio)$/))) && <iframe style={{zIndex:4, marginLeft:"72px", marginRight:"8px", minWidth:width+"px", maxWidth:width+"px", aspectRatio:1, backgroundColor:"black", border:0}} src={urlType(data[dataKey].content)} frameBorder="0" allow="fullscreen; accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen={true}></iframe>}
+                    {(dataKey === "1" && data[dataKey] && !((urlType(data[dataKey].content)).match(/^(unknown|image|video|audio|localimage|localvideo|localaudio)$/))) && <iframe title={dataKey} style={{zIndex:4, marginLeft:"72px", marginRight:"8px", minWidth:width+"px", maxWidth:width+"px", aspectRatio:1, backgroundColor:"black", border:0}} src={urlType(data[dataKey].content)} frameBorder="0" allow="fullscreen; accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen={true}></iframe>}
                     {(dataKey !== "1" && data[dataKey] && urlType(data[dataKey].content) === "image") && <div style={{zIndex:4, minWidth:width+"px", maxWidth:width+"px", aspectRatio:1, backgroundColor:"black", backgroundPosition:'center', backgroundRepeat:"no-repeat", backgroundSize:'cover', backgroundImage:'url("'+data[dataKey].content+'")', cursor:"pointer"}} onClick={() => {setImage('url("'+data[dataKey].content+'")')}} >
                       <div style={{zIndex:5, position:"absolute", minWidth:width+"px", maxWidth:width+"px", aspectRatio:1, backgroundColor:"rgba(0,0,0,0.75)", backgroundPosition:'center', backgroundRepeat:"no-repeat", backgroundSize:'contain', backgroundImage:'url("'+data[dataKey].content+'")', cursor:"pointer"}} onClick={() => {setImage('url("'+data[dataKey].content+'")')}} />
                     </div>}
@@ -478,14 +483,14 @@ function App() {
                     </div>}
                     {(dataKey !== "1" && data[dataKey] && urlType(data[dataKey].content) === "localvideo") && <video style={{zIndex:4, aspectRatio:1, backgroundColor:"black"}} width={width+"px"} controls ><source src={path+data[dataKey].content} /></video>}
                     {(dataKey !== "1" && data[dataKey] && urlType(data[dataKey].content) === "localaudio") && <audio style={{zIndex:4, minWidth:width+"px", maxWidth:width+"px", aspectRatio:1, backgroundColor:"black"}} controls ><source src={path+data[dataKey].content} /></audio>}
-                    {(dataKey !== "1" && data[dataKey] && !((urlType(data[dataKey].content)).match(/^(unknown|image|video|audio|localimage|localvideo|localaudio)$/))) && <iframe style={{zIndex:4, minWidth:width+"px", maxWidth:width+"px", aspectRatio:1, backgroundColor:"black", border:0}} src={urlType(data[dataKey].content)} frameBorder="0" allow="fullscreen; accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen={true}></iframe>}
+                    {(dataKey !== "1" && data[dataKey] && !((urlType(data[dataKey].content)).match(/^(unknown|image|video|audio|localimage|localvideo|localaudio)$/))) && <iframe title={dataKey} style={{zIndex:4, minWidth:width+"px", maxWidth:width+"px", aspectRatio:1, backgroundColor:"black", border:0}} src={urlType(data[dataKey].content)} frameBorder="0" allow="fullscreen; accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen={true}></iframe>}
                     <div key={rowIndex} style={{display:"flex", flexDirection:"row", justifyContent:"center", alignItems:"center"}}>
                       {(dataKey === "1") && <div style={{zIndex:5, cursor:"pointer", marginLeft:"64px", minWidth:"8px", minHeight:"calc(100% - 8px)", borderBottomLeftRadius:"999px", borderTopLeftRadius:"999px", backgroundColor:"white"}} onClick={() => {resetTree()}} />}
                       {(dataKey !== "1") && <div style={{zIndex:5, cursor:"pointer", minWidth:"8px", minHeight:"8px", height:"unset", borderRadius:"999px", backgroundColor:"white"}} onClick={() => {removeNode(dataKey); setData({...data})}} />}
-                      <textarea ref={(element) => {refs.current[dataKey] = element}} style={{zIndex:4, fontWeight:"bold", minWidth:width+"px", maxWidth:width+"px", resize:"none", overflow:"hidden", color:"white", fontWeight:"bold", margin:"4px 0px 4px 0px", padding:"0px 4px", backgroundColor:data[dataKey]?.enabled? colors[currentColor][0] : colors[currentColor][1], border:data[dataKey]?.enabled? "8px solid "+colors[currentColor][0] : "8px solid "+colors[currentColor][1], borderRadius:"0px"}} value={data[dataKey]?.content || ""} onClick={() => {enable(dataKey)}} onChange={(e) => {if (data[dataKey]) {data[dataKey].content = e.target.value; setData({...data}); autoHeight(e.target)}}} />
+                      <textarea ref={(element) => {refs.current[dataKey] = element}} style={{zIndex:4, minWidth:width+"px", maxWidth:width+"px", resize:"none", overflow:"hidden", color:"white", fontWeight:"bold", margin:"4px 0px 4px 0px", padding:"0px 4px", backgroundColor:data[dataKey]?.enabled? colors[currentColor][0] : colors[currentColor][1], border:data[dataKey]?.enabled? "8px solid "+colors[currentColor][0] : "8px solid "+colors[currentColor][1], borderRadius:"0px"}} value={data[dataKey]?.content || ""} onClick={() => {enable(dataKey)}} onChange={(e) => {if (data[dataKey]) {data[dataKey].content = e.target.value; setData({...data}); autoHeight(e.target)}}} />
                       <div style={{display:"flex", flexDirection:"column", justifyContent:"center", alignItems:"center", marginLeft:"-3px"}}>
                         {canUp(dataKey) ? <div style={{zIndex:5, cursor:"pointer"}} onClick={() => {moveUp(dataKey)}}>&#9652;</div> : <div>&#9652;</div>}
-                        <div style={{zIndex:5, cursor:"pointer", minWidth:"8px", minHeight:"8px", borderRadius:"999px", backgroundColor:"white"}} onClick={() => {insertNode(dataKey)}} />
+                        {canInsertTo(dataKey) && <div style={{zIndex:5, cursor:"pointer", minWidth:"8px", minHeight:"8px", borderRadius:"999px", backgroundColor:"white"}} onClick={() => {insertNode(dataKey)}} />}
                         {canDown(dataKey) ? <div style={{zIndex:5, cursor:"pointer"}} onClick={() => {moveDown(dataKey)}}>&#9662;</div> : <div>&#9662;</div>}
                       </div>
                     </div>
