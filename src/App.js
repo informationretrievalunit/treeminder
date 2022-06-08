@@ -159,23 +159,23 @@ function App() {
   const read = async (event) => {
     const file = event.target.files[0]
     if (file) {
-      const reader = new FileReader()
-      reader.onload = (e) => {
-        const result = e.target.result
-        const decrypted = decrypt(salt, result)
-        const parsed = {...JSON.parse(decrypted)}
-        if ("data" in parsed) {
-          setData(parsed.data)
-          if ("color" in parsed) {
+      if (event.target.value.substring(event.target.value.length - 9, event.target.value.length) === ".treemind") {
+        const reader = new FileReader()
+        reader.onload = (e) => {
+          const result = e.target.result
+          try {
+            const decrypted = decrypt(salt, result)
+            const parsed = {...JSON.parse(decrypted)}
+            setData(parsed.data)
             setCurrentColor(parsed.color)
+          } catch (error) {
+            
           }
-        } else {
-          setData(parsed)
         }
-        refs.current["input"].value = null
+        reader.readAsBinaryString(new Blob([file]))
       }
-      reader.readAsBinaryString(new Blob([file]))
     }
+    refs.current["input"].value = null
   }
 
   const resetTree = () => {
@@ -434,20 +434,20 @@ function App() {
         }, 2)
       }
       setTimeout(() => {
-        setBodyWidth(refs.current["screen"] ? refs.current["screen"].getBoundingClientRect().width : window.innerWidth)
         setBodyHeight(refs.current["screen"] ? refs.current["screen"].getBoundingClientRect().height : window.innerHeight)
+        setBodyWidth(Math.max(0, Object.keys(newColumns).length * (width + 80)))
       }, 3)
     }
     //console.log("data:", data)
   }, [data, trigger])
 
   return (
-    <div style={{minWidth:"100vw", maxWidth:"100vw", maxHeight:"100vh", minHeight:"100vh", margin:"0", padding:"0", color:"white", fontWeight:"bold"}}>
+    <div ref={(element) => {refs.current["outerScreen"] = element}} style={{minWidth:"100vw", maxWidth:"100vw", maxHeight:"100vh", minHeight:"100vh", margin:"0", padding:"0", color:"white", fontWeight:"bold"}}>
       <input ref={(element) => {refs.current["input"] = element}} type="file" name="choose tree of mind to open" accept=".treemind" style={{display:"none"}} onChange={(e) => {read(e)}} />
       <div style={{backgroundColor:"rgb(30,30,30)", minHeight:"100vh", minWidth:"100vw", position:"fixed"}} />
       {Object.keys(duplicate).map((dataKey, dataIndex) => {
         return (
-          <svg key={dataIndex} style={{zIndex:duplicate[dataKey].enabled?2:1, position:"absolute", pointerEvents:"none"}} width={bodyWidth} height={bodyHeight}><path style={{pointerEvents:"auto"}} stroke={duplicate[dataKey].enabled? colors[currentColor][0] : colors[currentColor][1]} opacity={duplicate[dataKey].enabled?"1":"0.5"} strokeWidth="8" fill="none" d={findCurve(dataKey.substring(0, dataKey.length - 1), dataKey)} /></svg>
+          <svg key={dataIndex} style={{zIndex:duplicate[dataKey].enabled?2:1, position:"absolute", pointerEvents:"none"}} width={bodyWidth + "px"} height={bodyHeight + "px"}><path style={{pointerEvents:"auto"}} stroke={duplicate[dataKey].enabled? colors[currentColor][0] : colors[currentColor][1]} opacity={duplicate[dataKey].enabled?"1":"0.5"} strokeWidth="8" fill="none" d={findCurve(dataKey.substring(0, dataKey.length - 1), dataKey)} /></svg>
         )
       })}
       <div ref={(element) => {refs.current["screen"] = element}} style={{zIndex:3, display:"flex", flexDirection:"row", justifyContent:"flex-start", alignItems:"stretch"}}>
@@ -482,7 +482,6 @@ function App() {
                     <div key={rowIndex} style={{display:"flex", flexDirection:"row", justifyContent:"center", alignItems:"center"}}>
                       {(dataKey === "1") && <div style={{zIndex:5, cursor:"pointer", marginLeft:"64px", minWidth:"8px", minHeight:"calc(100% - 8px)", borderBottomLeftRadius:"999px", borderTopLeftRadius:"999px", backgroundColor:"white"}} onClick={() => {resetTree()}} />}
                       {(dataKey !== "1") && <div style={{zIndex:5, cursor:"pointer", minWidth:"8px", minHeight:"8px", height:"unset", borderRadius:"999px", backgroundColor:"white"}} onClick={() => {removeNode(dataKey); setData({...data})}} />}
-                      {/* <textarea ref={(element) => {refs.current[dataKey] = element}} style={{zIndex:4, fontWeight:"bold", minWidth:width+"px", maxWidth:width+"px", resize:"none", overflow:"hidden", color:"white", fontWeight:"bold", margin:"4px 0px 4px 0px", padding:"0px 4px", backgroundColor:data[dataKey]?.enabled? colors[currentColor][0] : colors[currentColor][1], border:data[dataKey]?.enabled? "8px solid "+colors[currentColor][0] : "8px solid "+colors[currentColor][1], borderRadius:"0px"}} value={dataKey+" "+data[dataKey]?.content || ""} onClick={() => {enable(dataKey)}} onChange={(e) => {if (data[dataKey]) {data[dataKey].content = e.target.value; setData({...data}); autoHeight(e.target)}}} /> */}
                       <textarea ref={(element) => {refs.current[dataKey] = element}} style={{zIndex:4, fontWeight:"bold", minWidth:width+"px", maxWidth:width+"px", resize:"none", overflow:"hidden", color:"white", fontWeight:"bold", margin:"4px 0px 4px 0px", padding:"0px 4px", backgroundColor:data[dataKey]?.enabled? colors[currentColor][0] : colors[currentColor][1], border:data[dataKey]?.enabled? "8px solid "+colors[currentColor][0] : "8px solid "+colors[currentColor][1], borderRadius:"0px"}} value={data[dataKey]?.content || ""} onClick={() => {enable(dataKey)}} onChange={(e) => {if (data[dataKey]) {data[dataKey].content = e.target.value; setData({...data}); autoHeight(e.target)}}} />
                       <div style={{display:"flex", flexDirection:"column", justifyContent:"center", alignItems:"center", marginLeft:"-3px"}}>
                         {canUp(dataKey) ? <div style={{zIndex:5, cursor:"pointer"}} onClick={() => {moveUp(dataKey)}}>&#9652;</div> : <div>&#9652;</div>}
@@ -500,14 +499,14 @@ function App() {
       {image !== null && <div style={{zIndex:10, cursor:"pointer", position:"fixed", left:"50%", top:"50%", transform:"translate(-50%,-50%)", width:"100vw", height:"100vh", backgroundColor:"rgba(0,0,0,0.75)", backgroundPosition:'center', backgroundRepeat:"no-repeat", backgroundSize:'contain', backgroundImage:image}} onClick={() => {setImage(null)}} />}
       <div style={{zIndex:9, transformOrigin:"left bottom", transform:"scale("+100/zoom+")", position:"fixed", left:"0", bottom:"0", display:"flex", flexDirection:"row", justifyContent:"flex-start", alignItems:"center", margin:"4px 0px 4px 0px", padding:"0px 4px", borderRadius:"0px", minWidth:"120px"}}>
         <svg style={{zIndex:9, cursor:"pointer", margin:"4px"}} fill="white" width="32px" height="32px" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512" onClick={() => {open()}}><path d="M147.8 192H480V144C480 117.5 458.5 96 432 96h-160l-64-64h-160C21.49 32 0 53.49 0 80v328.4l90.54-181.1C101.4 205.6 123.4 192 147.8 192zM543.1 224H147.8C135.7 224 124.6 230.8 119.2 241.7L0 480h447.1c12.12 0 23.2-6.852 28.62-17.69l96-192C583.2 249 567.7 224 543.1 224z"/></svg>
-        <svg style={{zIndex:9, cursor:"pointer", margin:"4px", marginRight:"32px"}}  fill="white" width="32px" height="32px" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" onClick={() => {save()}}><path d="M433.1 129.1l-83.9-83.9C342.3 38.32 327.1 32 316.1 32H64C28.65 32 0 60.65 0 96v320c0 35.35 28.65 64 64 64h320c35.35 0 64-28.65 64-64V163.9C448 152.9 441.7 137.7 433.1 129.1zM224 416c-35.34 0-64-28.66-64-64s28.66-64 64-64s64 28.66 64 64S259.3 416 224 416zM320 208C320 216.8 312.8 224 304 224h-224C71.16 224 64 216.8 64 208v-96C64 103.2 71.16 96 80 96h224C312.8 96 320 103.2 320 112V208z"/></svg>
+        <svg style={{zIndex:9, cursor:"pointer", margin:"4px"}}  fill="white" width="32px" height="32px" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" onClick={() => {save()}}><path d="M433.1 129.1l-83.9-83.9C342.3 38.32 327.1 32 316.1 32H64C28.65 32 0 60.65 0 96v320c0 35.35 28.65 64 64 64h320c35.35 0 64-28.65 64-64V163.9C448 152.9 441.7 137.7 433.1 129.1zM224 416c-35.34 0-64-28.66-64-64s28.66-64 64-64s64 28.66 64 64S259.3 416 224 416zM320 208C320 216.8 312.8 224 304 224h-224C71.16 224 64 216.8 64 208v-96C64 103.2 71.16 96 80 96h224C312.8 96 320 103.2 320 112V208z"/></svg>
         {colors.map((value, index) => {
           return (
             <div key={index} style={{zIndex:9, cursor:"pointer", minWidth:"32px", minHeight:"32px", maxWidth:"32px", maxHeight:"32px", margin:"4px", backgroundImage:"linear-gradient(135deg,"+value[0]+","+value[1]+")", borderRadius:"8px", border:index===currentColor?"3px solid white":"3px solid dimgray"}} onClick={() => {setCurrentColor(parseInt(index))}}></div>
           )
         })}
       </div>
-      <div style={{zIndex:9, transformOrigin:"right bottom", transform:"scale("+100/zoom+")", position:"fixed", right:"0", bottom:"0", display:"flex", flexDirection:"row", justifyContent:"space-evenly", alignItems:"center", margin:"4px 0px 4px 0px", padding:"0px 4px", borderRadius:"0px", minWidth:"120px", fontSize:"small"}}>TreeMinder v1.0</div>
+      <div style={{zIndex:9, transformOrigin:"right bottom", transform:"scale("+100/zoom+")", position:"fixed", right:"0", bottom:"0", display:"flex", flexDirection:"row", justifyContent:"space-evenly", alignItems:"center", margin:"4px 0px 4px 0px", padding:"0px 4px", borderRadius:"0px", minWidth:"120px", fontSize:"small"}}>TreeMinder v1.0.1</div>
     </div>
   )
 }
