@@ -60,7 +60,13 @@ function App() {
       }
       return "unknown"
     }
-    if (url.match(/\.(jpeg|jpg|gif|png|webp|bmp|svg)$/) !== null) {
+    if (url.match(/format=(jpeg|jpg|gif|png|webp|bmp|svg)/) !== null) {
+      return "image"
+    } else if (url.match(/format=(mp4|webm|mov|ogg)/) !== null) {
+      return "video"
+    } else if (url.match(/format=(wav|wave|mp3|aac)/) !== null) {
+      return "audio"
+    } else if (url.match(/\.(jpeg|jpg|gif|png|webp|bmp|svg)$/) !== null) {
       return "image"
     } else if (url.match(/\.(mp4|webm|mov|ogg)$/) !== null) {
       return "video"
@@ -74,7 +80,7 @@ function App() {
       return "video"
     } else if (url.match(/\.(wav|wave|mp3|aac)/) !== null) {
       return "audio"
-    } else if (url.match(/(youtube.com\/watch)/)) {
+    } else if (url.match(/(youtube.com\/watch)/) !== null) {
       const partsOne = url.split('v=')
       if (partsOne.length > 1) {
         const partsTwo = partsOne[1].split('&')
@@ -84,12 +90,14 @@ function App() {
           return "https://www.youtube.com/embed/"+partsOne[1]
         }
       }
-    } else if (url.match(/(youtu.be\/)/)) {
+    } else if (url.match(/(youtu.be\/)/) !== null) {
       const partsOne = url.split('youtu.be/')
       if (partsOne.length > 1) {
         return "https://www.youtube.com/embed/"+partsOne[1]
       }
-    } else if (url.match(/(images.unsplash.com\/photo)/)) {
+    } else if (url.match(/(dailymotion.com\/video)/) !== null) {
+      return url.replace(".com/video/", ".com/embed/video/")
+    } else if (url.match(/(images.unsplash.com\/photo)/) !== null) {
       return "image"
     }
     return "unknown"
@@ -181,6 +189,25 @@ function App() {
   const resetTree = () => {
     setData({1:{links:[], enabled:true, content:"a fresh start"}})
     setSelected(0)
+  }
+
+  const dice = () => {
+    const tips = []
+    Object.keys(data).forEach((key) => {
+      const stringified = key + ""
+      let broken = false
+      for (let index = 1; index <= 8; index++) {
+        if (parseInt(stringified + index) in data) {
+          broken = true
+          break
+        }
+      }
+      if (!broken) {
+        tips.push(key)
+      }
+    })
+    const randomTip = tips[Math.floor(Math.random() * tips.length)]
+    enable(randomTip)
   }
 
   const insertNode = (toKey) => {
@@ -505,13 +532,14 @@ function App() {
       <div style={{zIndex:9, transformOrigin:"left bottom", transform:"scale("+100/zoom+")", position:"fixed", left:"0", bottom:"0", display:"flex", flexDirection:"row", justifyContent:"flex-start", alignItems:"center", margin:"4px 0px 4px 0px", padding:"0px 4px", borderRadius:"0px", minWidth:"120px"}}>
         <svg style={{zIndex:9, cursor:"pointer", margin:"4px"}} fill="white" width="32px" height="32px" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512" onClick={() => {open()}}><path d="M147.8 192H480V144C480 117.5 458.5 96 432 96h-160l-64-64h-160C21.49 32 0 53.49 0 80v328.4l90.54-181.1C101.4 205.6 123.4 192 147.8 192zM543.1 224H147.8C135.7 224 124.6 230.8 119.2 241.7L0 480h447.1c12.12 0 23.2-6.852 28.62-17.69l96-192C583.2 249 567.7 224 543.1 224z"/></svg>
         <svg style={{zIndex:9, cursor:"pointer", margin:"4px"}}  fill="white" width="32px" height="32px" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" onClick={() => {save()}}><path d="M433.1 129.1l-83.9-83.9C342.3 38.32 327.1 32 316.1 32H64C28.65 32 0 60.65 0 96v320c0 35.35 28.65 64 64 64h320c35.35 0 64-28.65 64-64V163.9C448 152.9 441.7 137.7 433.1 129.1zM224 416c-35.34 0-64-28.66-64-64s28.66-64 64-64s64 28.66 64 64S259.3 416 224 416zM320 208C320 216.8 312.8 224 304 224h-224C71.16 224 64 216.8 64 208v-96C64 103.2 71.16 96 80 96h224C312.8 96 320 103.2 320 112V208z"/></svg>
+        <svg style={{zIndex:9, cursor:"pointer", margin:"4px", marginRight:"32px"}}  fill="white" width="32px" height="32px" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512" onClick={() => {dice()}}><path d="M447.1 224c0-12.56-4.781-25.13-14.35-34.76l-174.9-174.9C249.1 4.786 236.5 0 223.1 0C211.4 0 198.9 4.786 189.2 14.35L14.35 189.2C4.783 198.9-.0011 211.4-.0011 223.1c0 12.56 4.785 25.17 14.35 34.8l174.9 174.9c9.625 9.562 22.19 14.35 34.75 14.35s25.13-4.783 34.75-14.35l174.9-174.9C443.2 249.1 447.1 236.6 447.1 224zM96 248c-13.25 0-23.1-10.75-23.1-23.1s10.75-23.1 23.1-23.1S120 210.8 120 224S109.3 248 96 248zM224 376c-13.25 0-23.1-10.75-23.1-23.1s10.75-23.1 23.1-23.1s23.1 10.75 23.1 23.1S237.3 376 224 376zM224 248c-13.25 0-23.1-10.75-23.1-23.1s10.75-23.1 23.1-23.1S248 210.8 248 224S237.3 248 224 248zM224 120c-13.25 0-23.1-10.75-23.1-23.1s10.75-23.1 23.1-23.1s23.1 10.75 23.1 23.1S237.3 120 224 120zM352 248c-13.25 0-23.1-10.75-23.1-23.1s10.75-23.1 23.1-23.1s23.1 10.75 23.1 23.1S365.3 248 352 248zM591.1 192l-118.7 0c4.418 10.27 6.604 21.25 6.604 32.23c0 20.7-7.865 41.38-23.63 57.14l-136.2 136.2v46.37C320 490.5 341.5 512 368 512h223.1c26.5 0 47.1-21.5 47.1-47.1V240C639.1 213.5 618.5 192 591.1 192zM479.1 376c-13.25 0-23.1-10.75-23.1-23.1s10.75-23.1 23.1-23.1s23.1 10.75 23.1 23.1S493.2 376 479.1 376z"/></svg>
         {colors.map((value, index) => {
           return (
             <div key={index} style={{zIndex:9, cursor:"pointer", minWidth:"32px", minHeight:"32px", maxWidth:"32px", maxHeight:"32px", margin:"4px", backgroundImage:"linear-gradient(135deg,"+value[0]+","+value[1]+")", borderRadius:"8px", border:index===currentColor?"3px solid white":"3px solid dimgray"}} onClick={() => {setCurrentColor(parseInt(index))}}></div>
           )
         })}
       </div>
-      <div style={{zIndex:9, transformOrigin:"right bottom", transform:"scale("+100/zoom+")", position:"fixed", right:"0", bottom:"0", display:"flex", flexDirection:"row", justifyContent:"space-evenly", alignItems:"center", margin:"4px 0px 4px 0px", padding:"0px 4px", borderRadius:"0px", minWidth:"120px", fontSize:"small"}}>TreeMinder v1.0.1</div>
+      <div style={{zIndex:9, transformOrigin:"right bottom", transform:"scale("+100/zoom+")", position:"fixed", right:"0", bottom:"0", display:"flex", flexDirection:"row", justifyContent:"space-evenly", alignItems:"center", margin:"4px 0px 4px 0px", padding:"0px 4px", borderRadius:"0px", minWidth:"120px", fontSize:"small"}}>TreeMinder v1.0.2</div>
     </div>
   )
 }
